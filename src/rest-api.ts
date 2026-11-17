@@ -258,7 +258,12 @@ export function handleRestRequest(
     // Git refs
     if (method === 'GET' && subPath === 'git/refs') {
       const refs = storage.listRefs(fullName);
-      return { status: 200, body: refs.map(r => ({ ref: r.name, node_id: '', url: `${baseUrl}/api/v3/repos/${fullName}/git/refs/${r.name}`, object: { sha: r.target, type: r.type === 'branch' ? 'commit' : 'tag', url: `${baseUrl}/api/v3/repos/${fullName}/git/${r.type === 'branch' ? 'commits' : 'tags'}/${r.target}` })), headers };
+      const refObjects = refs.map(r => {
+        const targetType = r.type === 'branch' ? 'commit' : 'tag';
+        const targetUrl = `${baseUrl}/api/v3/repos/${fullName}/git/${targetType === 'commit' ? 'commits' : 'tags'}/${r.target}`;
+        return { ref: r.name, node_id: '', url: `${baseUrl}/api/v3/repos/${fullName}/git/refs/${r.name}`, object: { sha: r.target, type: targetType, url: targetUrl } };
+      });
+      return { status: 200, body: refObjects, headers };
     }
 
     if (method === 'POST' && subPath === 'git/refs') {
@@ -280,6 +285,17 @@ export function handleRestRequest(
     const paginated = repos.slice(start, start + perPage);
     headers.link = parseLinkHeader(`${baseUrl}/api/v3/user/repos`, page, perPage, repos.length);
     return { status: 200, body: paginated, headers };
+  }
+
+  if (method === 'POST' && path === '/api/v3/user/repos') {
+    const { name, description, private: private_ = false } = body as { name: string; description?: string; private?: boolean };
+    if (!name) return { status: 422, body: { message: 'Validation Failed', errors: [{ resource: 'Repository', field: 'name', code: 'missing_field' }] }, headers };
+    try {
+      const newRepo = storage.createRepository('testuser', name, description ?? null, private_);
+      return { status: 201, body: newRepo, headers };
+    } catch (e) {
+      return { status: 422, body: { message: 'Validation Failed', errors: [{ resource: 'Repository', field: 'name', code: 'already_exists' }] }, headers };
+    }
   }
 
   // GitHub API root already handled above

@@ -18,7 +18,8 @@ function loadFromDisk(): StoredData | null {
   try {
     if (existsSync(STORAGE_FILE)) {
       const data = readFileSync(STORAGE_FILE, 'utf-8');
-      return JSON.parse(data) as StoredData;
+      const parsed = JSON.parse(data);
+      return jsonToStorage(parsed);
     }
   } catch {
     // Ignore load errors, start fresh

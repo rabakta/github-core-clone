@@ -135,7 +135,7 @@ export function createApp(): Server {
     // MCP - streamable HTTP
     if (method === 'POST' && path === '/mcp') {
       const body = await parseBody(req);
-      const result = handleMCPRequest(body);
+      const result = await handleMCPRequest(body);
       sendJson(res, result.status, result.body);
       return;
     }

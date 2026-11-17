@@ -2,8 +2,8 @@
 
 import type { GitObject, SHA1, GitObjectType, Ref, TreeEntry, Repository, UserIdentity } from './types.ts';
 import { storage } from './storage.ts';
-import { createHash, createInflate, createDeflate } from 'node:crypto';
-import { createGzip, createGunzip } from 'node:zlib';
+import { createHash } from 'node:crypto';
+import { createDeflate, createInflate, createGzip, createGunzip } from 'node:zlib';
 import { Readable, Writable } from 'node:stream';
 
 const PKT_LINE_MAX = 65520;

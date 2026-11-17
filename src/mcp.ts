@@ -181,13 +181,13 @@ async function handleMCPToolCall(name: string, args: Record<string, unknown>): P
   }
 }
 
-export function handleMCPRequest(body: unknown): { status: number; body: unknown } {
+export async function handleMCPRequest(body: unknown): Promise<{ status: number; body: unknown }> {
   if (!body || typeof body !== 'object') {
-    return { status: 400, body: { jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid Request' } } };
+    return Promise.resolve({ status: 400, body: { jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid Request' } } });
   }
 
   const msg = body as MCPMessage;
-  
+
   // Handle batch requests
   if (Array.isArray(msg)) {
     const results = await Promise.all(msg.map(m => handleMCPRequest(m)));
